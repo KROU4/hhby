@@ -2,8 +2,10 @@ import { Router } from 'express';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { HHApiService } from '../services/hhApi';
 import { prisma } from '../utils/db';
-import { decrypt } from '../utils/encryption';
 import { logger } from '../utils/logger';
+import { applicationLimiter } from '../middleware/rateLimiter';
+import { validateBody, createApplicationSchema } from '../middleware/validation';
+import { getValidAccessToken } from '../utils/tokenRefresh';
 
 const router = Router();
 
@@ -11,21 +13,15 @@ const router = Router();
 router.use(authMiddleware);
 
 // POST /api/applications - Отправить отклик на вакансию
-router.post('/', async (req: AuthRequest, res) => {
+router.post('/', applicationLimiter, validateBody(createApplicationSchema), async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
     const { vacancyId, resumeId, message } = req.body;
 
-    if (!vacancyId || !resumeId) {
-      return res.status(400).json({ error: 'vacancyId and resumeId are required' });
-    }
+    // Получаем валидный access token (автоматически обновляется при необходимости)
+    const accessToken = await getValidAccessToken(userId);
 
-    // Получаем пользователя с токенами
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
-
-    if (!user || !user.accessToken) {
+    if (!accessToken) {
       return res.status(401).json({ error: 'User not authenticated with HH.ru' });
     }
 
@@ -64,8 +60,7 @@ router.post('/', async (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'You have already applied to this vacancy' });
     }
 
-    // Расшифровываем токен и отправляем отклик
-    const accessToken = decrypt(user.accessToken);
+    // Отправляем отклик через HH API
     const hhApi = new HHApiService(accessToken);
 
     const negotiation = await hhApi.applyToVacancy(

@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { connectDB, disconnectDB } from './utils/db';
 import { errorHandler } from './middleware/errorHandler';
 import { logger } from './utils/logger';
+import { apiLimiter, authLimiter } from './middleware/rateLimiter';
 
 // Загружаем переменные окружения
 dotenv.config();
@@ -36,11 +37,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// Rate limiting
+app.use('/api', apiLimiter);
+
 // Роуты
-app.use('/auth', authRoutes);
+app.use('/auth', authLimiter, authRoutes);
 
 // Callback endpoint для HH.ru OAuth (зарегистрирован как http://localhost:8080/callback)
-app.get('/callback', async (req, res) => {
+app.get('/callback', authLimiter, async (req, res) => {
   try {
     // Детальное логирование для отладки
     logger.info('Callback received');

@@ -2,9 +2,11 @@ import { Router } from 'express';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { HHApiService } from '../services/hhApi';
 import { prisma } from '../utils/db';
-import { decrypt } from '../utils/encryption';
 import { logger } from '../utils/logger';
 import { HHVacancySearchParams } from '../types';
+import { searchLimiter } from '../middleware/rateLimiter';
+import { validateQuery, searchVacanciesSchema } from '../middleware/validation';
+import { getValidAccessToken } from '../utils/tokenRefresh';
 
 const router = Router();
 
@@ -12,32 +14,19 @@ const router = Router();
 router.use(authMiddleware);
 
 // GET /api/vacancies/search - Поиск вакансий
-router.get('/search', async (req: AuthRequest, res) => {
+router.get('/search', searchLimiter, validateQuery(searchVacanciesSchema), async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
 
-    // Получаем пользователя с токенами
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
+    // Получаем валидный access token (автоматически обновляется при необходимости)
+    const accessToken = await getValidAccessToken(userId);
 
-    if (!user || !user.accessToken) {
+    if (!accessToken) {
       return res.status(401).json({ error: 'User not authenticated with HH.ru' });
     }
 
-    // Расшифровываем токен
-    const accessToken = decrypt(user.accessToken);
-
-    // Параметры поиска
-    const searchParams: HHVacancySearchParams = {
-      text: req.query.text as string,
-      area: req.query.area as string,
-      salary: req.query.salary ? parseInt(req.query.salary as string) : undefined,
-      experience: req.query.experience as string,
-      schedule: req.query.schedule as string,
-      per_page: req.query.per_page ? parseInt(req.query.per_page as string) : 20,
-      page: req.query.page ? parseInt(req.query.page as string) : 0,
-    };
+    // Параметры поиска уже провалидированы middleware
+    const searchParams: HHVacancySearchParams = req.query as any;
 
     // Поиск вакансий
     const hhApi = new HHApiService(accessToken);
@@ -86,17 +75,12 @@ router.get('/:id', async (req: AuthRequest, res) => {
     const userId = req.userId!;
     const vacancyId = req.params.id;
 
-    // Получаем пользователя с токенами
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    });
+    // Получаем валидный access token (автоматически обновляется при необходимости)
+    const accessToken = await getValidAccessToken(userId);
 
-    if (!user || !user.accessToken) {
+    if (!accessToken) {
       return res.status(401).json({ error: 'User not authenticated with HH.ru' });
     }
-
-    // Расшифровываем токен
-    const accessToken = decrypt(user.accessToken);
 
     // Получаем вакансию из HH.ru
     const hhApi = new HHApiService(accessToken);
