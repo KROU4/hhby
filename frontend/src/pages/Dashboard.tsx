@@ -50,7 +50,7 @@ export const Dashboard = () => {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-dark-300">Загрузка...</p>
+          <p className="text-gray-600">Загрузка...</p>
         </div>
       </div>
     );
@@ -70,10 +70,10 @@ export const Dashboard = () => {
         animate={{ opacity: 1, y: 0 }}
         className="mb-12"
       >
-        <h1 className="text-4xl font-bold gradient-text mb-4">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">
           Панель управления
         </h1>
-        <p className="text-dark-400">
+        <p className="text-gray-600">
           Управляйте автоматической рассылкой откликов и отслеживайте статистику
         </p>
       </motion.div>
@@ -82,14 +82,14 @@ export const Dashboard = () => {
       <Card className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-semibold text-dark-50 mb-2">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
               Автоматическая рассылка
             </h2>
-            <p className="text-dark-400">
+            <p className="text-gray-600">
               {settings?.enabled ? (
-                <span className="text-green-400">✓ Включена</span>
+                <span className="text-green-600">✓ Включена</span>
               ) : (
-                <span className="text-dark-500">Выключена</span>
+                <span className="text-gray-400">Выключена</span>
               )}
               {settings && (
                 <span className="ml-4">
@@ -118,10 +118,10 @@ export const Dashboard = () => {
           >
             <Card hover={false}>
               <div className="text-4xl mb-3">{stat.icon}</div>
-              <div className="text-3xl font-bold text-dark-50 mb-2">
+              <div className="text-3xl font-bold text-gray-900 mb-2">
                 {stat.value}
               </div>
-              <div className="text-sm text-dark-400">{stat.label}</div>
+              <div className="text-sm text-gray-600">{stat.label}</div>
             </Card>
           </motion.div>
         ))}
@@ -133,36 +133,36 @@ export const Dashboard = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
       >
-        <h2 className="text-2xl font-semibold text-dark-50 mb-6">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-6">
           Быстрые действия
         </h2>
         <div className="grid md:grid-cols-3 gap-6">
           <Card className="cursor-pointer" onClick={() => window.location.href = '/search'}>
             <div className="text-4xl mb-4">🔍</div>
-            <h3 className="text-xl font-semibold text-dark-50 mb-2">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
               Поиск вакансий
             </h3>
-            <p className="text-dark-400">
+            <p className="text-gray-600">
               Найдите подходящие вакансии и откликнитесь вручную
             </p>
           </Card>
 
           <Card className="cursor-pointer" onClick={() => window.location.href = '/settings'}>
             <div className="text-4xl mb-4">⚙️</div>
-            <h3 className="text-xl font-semibold text-dark-50 mb-2">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
               Настройки
             </h3>
-            <p className="text-dark-400">
+            <p className="text-gray-600">
               Настройте фильтры и параметры автоматической рассылки
             </p>
           </Card>
 
           <Card className="cursor-pointer" onClick={() => window.location.href = '/applications'}>
             <div className="text-4xl mb-4">📋</div>
-            <h3 className="text-xl font-semibold text-dark-50 mb-2">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
               История откликов
             </h3>
-            <p className="text-dark-400">
+            <p className="text-gray-600">
               Просмотрите все отправленные отклики и их статусы
             </p>
           </Card>

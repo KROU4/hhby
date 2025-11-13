@@ -16,14 +16,14 @@ export const Navbar = () => {
   if (!isAuthenticated) return null;
 
   return (
-    <nav className="glass sticky top-0 z-50 border-b border-dark-700">
+    <nav className="glass sticky top-0 z-50 border-b border-gray-200">
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <Link to="/dashboard" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
-              <span className="text-xl">⚡</span>
+            <div className="w-10 h-10 rounded-lg bg-primary-500 flex items-center justify-center text-white font-bold text-xl">
+              hh
             </div>
-            <span className="text-xl font-bold gradient-text">HH Auto</span>
+            <span className="text-xl font-bold text-gray-900">Auto-Responder</span>
           </Link>
 
           <div className="flex items-center gap-6">
@@ -35,7 +35,7 @@ export const Navbar = () => {
               >
                 <span className={`
                   flex items-center gap-2 text-sm font-medium transition-colors
-                  ${location.pathname === link.path ? 'text-primary-400' : 'text-dark-300 hover:text-primary-400'}
+                  ${location.pathname === link.path ? 'text-primary-500' : 'text-gray-600 hover:text-primary-500'}
                 `}>
                   <span>{link.icon}</span>
                   {link.label}
@@ -51,10 +51,10 @@ export const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="text-sm text-dark-400">{user?.email}</span>
+            <span className="text-sm text-gray-600">{user?.email}</span>
             <button
               onClick={logout}
-              className="text-sm text-dark-400 hover:text-primary-400 transition-colors"
+              className="text-sm text-gray-600 hover:text-primary-500 transition-colors"
             >
               Выйти
             </button>

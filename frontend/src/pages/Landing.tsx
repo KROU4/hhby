@@ -18,8 +18,8 @@ export const Landing = () => {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="mb-8"
           >
-            <div className="w-24 h-24 mx-auto rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center shadow-2xl shadow-primary-500/30">
-              <span className="text-5xl">⚡</span>
+            <div className="w-24 h-24 mx-auto rounded-2xl bg-primary-500 flex items-center justify-center shadow-2xl shadow-primary-500/30 text-white font-bold text-5xl">
+              hh
             </div>
           </motion.div>
 
@@ -27,7 +27,7 @@ export const Landing = () => {
             <span className="gradient-text">HH Auto-Responder</span>
           </h1>
 
-          <p className="text-2xl text-dark-300 mb-12 max-w-3xl mx-auto font-light">
+          <p className="text-2xl text-gray-600 mb-12 max-w-3xl mx-auto font-light">
             Автоматизируйте рассылку откликов на вакансии HH.ru
             <br />
             Найдите работу мечты без лишних усилий
@@ -78,10 +78,10 @@ export const Landing = () => {
               className="card text-center hover:border-primary-500/50"
             >
               <div className="text-5xl mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-semibold text-dark-50 mb-3">
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
                 {feature.title}
               </h3>
-              <p className="text-dark-400">{feature.description}</p>
+              <p className="text-gray-600">{feature.description}</p>
             </motion.div>
           ))}
         </motion.div>
