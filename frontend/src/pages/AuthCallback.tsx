@@ -11,6 +11,9 @@ export const AuthCallback = () => {
     const token = searchParams.get('token');
     const error = searchParams.get('message');
 
+    console.log('AuthCallback - Token:', token?.substring(0, 20) + '...');
+    console.log('AuthCallback - Error:', error);
+
     if (error) {
       console.error('Auth error:', error);
       navigate('/?error=' + encodeURIComponent(error));
@@ -18,15 +21,19 @@ export const AuthCallback = () => {
     }
 
     if (token) {
+      console.log('Attempting to login with token...');
       login(token)
         .then(() => {
+          console.log('Login successful, navigating to dashboard');
           navigate('/dashboard');
         })
         .catch((err) => {
           console.error('Login failed:', err);
+          console.error('Error details:', err.response?.data || err.message);
           navigate('/?error=login_failed');
         });
     } else {
+      console.error('No token received');
       navigate('/?error=no_token');
     }
   }, [searchParams, navigate, login]);
