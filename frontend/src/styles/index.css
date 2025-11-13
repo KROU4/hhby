@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbar */
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-dark-800;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-dark-600 rounded-full hover:bg-dark-500;
+  }
+}
+
+/* Base styles */
+body {
+  @apply bg-dark-900 text-dark-50 font-sans antialiased;
+  font-family: 'Commissioner', system-ui, sans-serif;
+}
+
+/* Background pattern */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(0, 230, 184, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(0, 230, 184, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Glassmorphism effect */
+.glass {
+  @apply bg-dark-800/50 backdrop-blur-xl border border-dark-700/50;
+}
+
+/* Button styles */
+.btn {
+  @apply px-6 py-3 rounded-lg font-medium transition-all duration-200;
+}
+
+.btn-primary {
+  @apply bg-primary-500 text-dark-900 hover:bg-primary-400 hover:shadow-lg hover:shadow-primary-500/30;
+}
+
+.btn-secondary {
+  @apply bg-dark-700 text-dark-50 hover:bg-dark-600 border border-dark-600;
+}
+
+/* Input styles */
+.input {
+  @apply w-full px-4 py-3 bg-dark-800 border border-dark-700 rounded-lg text-dark-50 placeholder-dark-400 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all;
+}
+
+/* Card styles */
+.card {
+  @apply glass rounded-xl p-6 transition-all duration-200 hover:border-dark-600;
+}
+
+/* Gradient text */
+.gradient-text {
+  @apply bg-gradient-to-r from-primary-400 to-primary-600 bg-clip-text text-transparent;
+}

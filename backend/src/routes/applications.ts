@@ -1,0 +1,182 @@
+import { Router } from 'express';
+import { authMiddleware, AuthRequest } from '../middleware/auth';
+import { HHApiService } from '../services/hhApi';
+import { prisma } from '../utils/db';
+import { decrypt } from '../utils/encryption';
+import { logger } from '../utils/logger';
+
+const router = Router();
+
+// Все роуты требуют аутентификации
+router.use(authMiddleware);
+
+// POST /api/applications - Отправить отклик на вакансию
+router.post('/', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    const { vacancyId, resumeId, message } = req.body;
+
+    if (!vacancyId || !resumeId) {
+      return res.status(400).json({ error: 'vacancyId and resumeId are required' });
+    }
+
+    // Получаем пользователя с токенами
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user || !user.accessToken) {
+      return res.status(401).json({ error: 'User not authenticated with HH.ru' });
+    }
+
+    // Проверяем, что резюме принадлежит пользователю
+    const resume = await prisma.resume.findFirst({
+      where: {
+        id: resumeId,
+        userId,
+      },
+    });
+
+    if (!resume || !resume.hhResumeId) {
+      return res.status(404).json({ error: 'Resume not found' });
+    }
+
+    // Проверяем, что вакансия существует
+    const job = await prisma.job.findUnique({
+      where: { hhJobId: vacancyId },
+    });
+
+    if (!job) {
+      return res.status(404).json({ error: 'Vacancy not found' });
+    }
+
+    // Проверяем, не отправляли ли уже отклик
+    const existingApplication = await prisma.jobApplication.findUnique({
+      where: {
+        userId_jobId: {
+          userId,
+          jobId: job.id,
+        },
+      },
+    });
+
+    if (existingApplication) {
+      return res.status(400).json({ error: 'You have already applied to this vacancy' });
+    }
+
+    // Расшифровываем токен и отправляем отклик
+    const accessToken = decrypt(user.accessToken);
+    const hhApi = new HHApiService(accessToken);
+
+    const negotiation = await hhApi.applyToVacancy(
+      vacancyId,
+      resume.hhResumeId,
+      message
+    );
+
+    // Сохраняем отклик в БД
+    const application = await prisma.jobApplication.create({
+      data: {
+        userId,
+        jobId: job.id,
+        resumeId,
+        letterContent: message,
+        status: 'sent',
+        sentAt: new Date(),
+      },
+    });
+
+    // Обновляем аналитику
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    await prisma.analytics.upsert({
+      where: {
+        userId_date: {
+          userId,
+          date: today,
+        },
+      },
+      update: {
+        responsesCount: { increment: 1 },
+      },
+      create: {
+        userId,
+        date: today,
+        responsesCount: 1,
+        viewsCount: 0,
+        invitationsCount: 0,
+        rejectionsCount: 0,
+      },
+    });
+
+    res.json({
+      success: true,
+      application,
+      negotiation,
+    });
+
+  } catch (error: any) {
+    logger.error('Apply to vacancy error:', error);
+    res.status(500).json({ error: error.message || 'Failed to apply to vacancy' });
+  }
+});
+
+// GET /api/applications - Получить список откликов
+router.get('/', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    const { status } = req.query;
+
+    const where: any = { userId };
+    if (status) {
+      where.status = status;
+    }
+
+    const applications = await prisma.jobApplication.findMany({
+      where,
+      include: {
+        job: true,
+        resume: true,
+      },
+      orderBy: {
+        sentAt: 'desc',
+      },
+    });
+
+    res.json(applications);
+  } catch (error: any) {
+    logger.error('Get applications error:', error);
+    res.status(500).json({ error: 'Failed to get applications' });
+  }
+});
+
+// GET /api/applications/:id - Получить конкретный отклик
+router.get('/:id', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    const applicationId = req.params.id;
+
+    const application = await prisma.jobApplication.findFirst({
+      where: {
+        id: applicationId,
+        userId,
+      },
+      include: {
+        job: true,
+        resume: true,
+      },
+    });
+
+    if (!application) {
+      return res.status(404).json({ error: 'Application not found' });
+    }
+
+    res.json(application);
+  } catch (error: any) {
+    logger.error('Get application error:', error);
+    res.status(500).json({ error: 'Failed to get application' });
+  }
+});
+
+export default router;

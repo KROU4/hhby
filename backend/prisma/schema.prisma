@@ -1,0 +1,139 @@
+// Prisma Schema для HH Auto-Responder
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Пользователь
+model User {
+  id        String   @id @default(uuid())
+  email     String?  @unique
+
+  // HH.ru данные
+  hhUserId  String?  @unique
+  accessToken    String?  // Зашифрованный
+  refreshToken   String?  // Зашифрованный
+  tokenExpiresAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Отношения
+  resumes    Resume[]
+  settings   Settings?
+  applications JobApplication[]
+  analytics  Analytics[]
+}
+
+// Резюме пользователя
+model Resume {
+  id       String   @id @default(uuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  hhResumeId String?  @unique  // ID резюме в HH.ru
+  title      String
+  fileUrl    String?
+  content    String?  // JSON с данными резюме
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Отношения
+  applications JobApplication[]
+}
+
+// Настройки автоматической рассылки
+model Settings {
+  id       String   @id @default(uuid())
+  userId   String   @unique
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Настройки откликов
+  enabled             Boolean @default(false)
+  maxResponsesPerDay  Int     @default(200)
+
+  // Фильтры поиска (JSON)
+  searchFilters       String?  // {text, area, salary, experience, schedule}
+  excludeKeywords     String?  // Исключить вакансии с этими словами
+  blacklistEmployers  String?  // ID работодателей в черном списке
+
+  // Сопроводительное письмо
+  coverLetterTemplate String?
+  useAiGeneration     Boolean @default(false)
+
+  // Расписание
+  scheduleEnabled     Boolean @default(false)
+  scheduleTime        String?  // JSON массив времен отправки
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Вакансия
+model Job {
+  id          String   @id @default(uuid())
+  hhJobId     String   @unique  // ID вакансии в HH.ru
+
+  title       String
+  company     String
+  salary      String?
+  location    String?
+  url         String
+  description String?
+
+  // Метаданные
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+
+  // Отношения
+  applications JobApplication[]
+}
+
+// Отклик на вакансию
+model JobApplication {
+  id       String   @id @default(uuid())
+
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  jobId    String
+  job      Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  resumeId String
+  resume   Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  // Данные отклика
+  status         String  @default("sent")  // sent, viewed, invited, rejected
+  letterContent  String?
+
+  // Метаданные
+  sentAt     DateTime @default(now())
+  viewedAt   DateTime?
+  respondedAt DateTime?
+
+  @@unique([userId, jobId])  // Один отклик на вакансию от пользователя
+}
+
+// Аналитика
+model Analytics {
+  id        String   @id @default(uuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  date      DateTime @default(now())
+
+  // Метрики
+  responsesCount   Int @default(0)
+  viewsCount       Int @default(0)
+  invitationsCount Int @default(0)
+  rejectionsCount  Int @default(0)
+
+  @@unique([userId, date])
+}
