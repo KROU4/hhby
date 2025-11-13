@@ -1,14 +1,18 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Vacancy } from '../types';
+import { Vacancy, Resume } from '../types';
 import { Button } from './Button';
 
 interface VacancyCardProps {
   vacancy: Vacancy;
-  onApply?: (vacancyId: string) => void;
+  resumes?: Resume[];
+  onApply?: (vacancyId: string, resumeId?: string) => void;
   applied?: boolean;
 }
 
-export const VacancyCard = ({ vacancy, onApply, applied }: VacancyCardProps) => {
+export const VacancyCard = ({ vacancy, resumes = [], onApply, applied }: VacancyCardProps) => {
+  const [selectedResumeId, setSelectedResumeId] = useState<string>(resumes[0]?.id || '');
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -45,10 +49,29 @@ export const VacancyCard = ({ vacancy, onApply, applied }: VacancyCardProps) => 
         </div>
       )}
 
+      {resumes.length > 1 && !applied && (
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Выберите резюме
+          </label>
+          <select
+            className="input"
+            value={selectedResumeId}
+            onChange={(e) => setSelectedResumeId(e.target.value)}
+          >
+            {resumes.map((resume) => (
+              <option key={resume.id} value={resume.id}>
+                {resume.title}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       <div className="flex gap-3">
         <Button
           variant="primary"
-          onClick={() => onApply?.(vacancy.id)}
+          onClick={() => onApply?.(vacancy.id, selectedResumeId)}
           disabled={applied}
           className="flex-1"
         >

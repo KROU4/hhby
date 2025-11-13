@@ -23,6 +23,8 @@ export const Settings = () => {
     searchSalary: '',
     excludeKeywords: '',
     blacklistEmployers: '',
+    scheduleEnabled: false,
+    scheduleTime: '09:00',
   });
 
   useEffect(() => {
@@ -48,6 +50,8 @@ export const Settings = () => {
         searchSalary: settingsRes.data.searchFilters?.salary?.toString() || '',
         excludeKeywords: settingsRes.data.excludeKeywords?.join(', ') || '',
         blacklistEmployers: settingsRes.data.blacklistEmployers?.join(', ') || '',
+        scheduleEnabled: settingsRes.data.scheduleEnabled || false,
+        scheduleTime: settingsRes.data.scheduleTime || '09:00',
       });
     } catch (error) {
       console.error('Failed to fetch settings:', error);
@@ -75,6 +79,8 @@ export const Settings = () => {
         blacklistEmployers: formData.blacklistEmployers
           ? formData.blacklistEmployers.split(',').map(k => k.trim()).filter(Boolean)
           : [],
+        scheduleEnabled: formData.scheduleEnabled,
+        scheduleTime: formData.scheduleTime,
       });
 
       addToast('Настройки успешно сохранены!', 'success');
@@ -194,6 +200,43 @@ export const Settings = () => {
             min={1}
             max={500}
           />
+
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div className="flex-1">
+              <p className="text-gray-900 font-medium">Расписание откликов</p>
+              <p className="text-sm text-gray-600 mt-1">
+                Отправлять отклики только в определенное время
+              </p>
+            </div>
+            <button
+              onClick={() => setFormData({ ...formData, scheduleEnabled: !formData.scheduleEnabled })}
+              className={`
+                relative w-14 h-8 rounded-full transition-colors
+                ${formData.scheduleEnabled ? 'bg-primary-500' : 'bg-gray-300'}
+              `}
+            >
+              <div
+                className={`
+                  absolute top-1 w-6 h-6 bg-white rounded-full transition-transform
+                  ${formData.scheduleEnabled ? 'translate-x-7' : 'translate-x-1'}
+                `}
+              />
+            </button>
+          </div>
+
+          {formData.scheduleEnabled && (
+            <div className="pl-4">
+              <Input
+                type="time"
+                label="Время отправки откликов"
+                value={formData.scheduleTime}
+                onChange={(e) => setFormData({ ...formData, scheduleTime: e.target.value })}
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                Отклики будут отправляться ежедневно в указанное время
+              </p>
+            </div>
+          )}
         </div>
       </Card>
 
@@ -232,6 +275,16 @@ export const Settings = () => {
             value={formData.excludeKeywords}
             onChange={(e) => setFormData({ ...formData, excludeKeywords: e.target.value })}
           />
+
+          <Input
+            label="Черный список работодателей (через запятую)"
+            placeholder="Компания 1, Компания 2..."
+            value={formData.blacklistEmployers}
+            onChange={(e) => setFormData({ ...formData, blacklistEmployers: e.target.value })}
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Вакансии от этих работодателей будут автоматически игнорироваться
+          </p>
         </div>
       </Card>
 

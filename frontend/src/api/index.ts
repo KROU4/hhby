@@ -66,5 +66,22 @@ export const api = {
         invitationsCount: number;
         rejectionsCount: number;
       }>('/api/analytics/today'),
+    getRange: (days: number = 7) => {
+      const to = new Date();
+      const from = new Date();
+      from.setDate(from.getDate() - days);
+      return apiClient.get<Array<{
+        date: string;
+        responsesCount: number;
+        viewsCount: number;
+        invitationsCount: number;
+        rejectionsCount: number;
+      }>>('/api/analytics/range', {
+        params: {
+          from: from.toISOString().split('T')[0],
+          to: to.toISOString().split('T')[0],
+        },
+      });
+    },
   },
 };

@@ -81,16 +81,19 @@ export const Search = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleApply = async (vacancyId: string) => {
+  const handleApply = async (vacancyId: string, resumeId?: string) => {
     if (resumes.length === 0) {
       addToast('Сначала добавьте резюме в настройках!', 'warning');
       return;
     }
 
+    // Используем переданное резюме или первое по умолчанию
+    const selectedResumeId = resumeId || resumes[0].id;
+
     try {
       await api.applications.create({
         vacancyId,
-        resumeId: resumes[0].id,
+        resumeId: selectedResumeId,
         message: 'Здравствуйте! Я заинтересован в данной вакансии.',
       });
       setAppliedVacancies(prev => new Set([...prev, vacancyId]));
@@ -196,6 +199,7 @@ export const Search = () => {
               <VacancyCard
                 key={vacancy.id}
                 vacancy={vacancy}
+                resumes={resumes}
                 onApply={handleApply}
                 applied={appliedVacancies.has(vacancy.id)}
               />
