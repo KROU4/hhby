@@ -38,6 +38,82 @@ app.use((req, res, next) => {
 
 // Роуты
 app.use('/auth', authRoutes);
+
+// Callback endpoint для HH.ru OAuth (зарегистрирован как http://localhost:8080/callback)
+app.get('/callback', async (req, res) => {
+  try {
+    const { code } = req.query;
+
+    if (!code || typeof code !== 'string') {
+      return res.status(400).json({ error: 'Authorization code is required' });
+    }
+
+    logger.info('Received authorization code, exchanging for token...');
+
+    const { HHApiService } = await import('./services/hhApi');
+    const { encrypt } = await import('./utils/encryption');
+    const { generateToken } = await import('./middleware/auth');
+    const { prisma } = await import('./utils/db');
+
+    const hhApi = new HHApiService();
+    const tokenData = await hhApi.getAccessToken(code);
+
+    // Получаем информацию о пользователе
+    hhApi.setAccessToken(tokenData.access_token);
+    const hhUser = await hhApi.getMe();
+
+    logger.info('User info received:', hhUser);
+
+    // Шифруем токены
+    const encryptedAccessToken = encrypt(tokenData.access_token);
+    const encryptedRefreshToken = encrypt(tokenData.refresh_token);
+    const expiresAt = new Date(Date.now() + tokenData.expires_in * 1000);
+
+    // Создаем или обновляем пользователя
+    const user = await prisma.user.upsert({
+      where: { hhUserId: hhUser.id },
+      update: {
+        email: hhUser.email,
+        accessToken: encryptedAccessToken,
+        refreshToken: encryptedRefreshToken,
+        tokenExpiresAt: expiresAt,
+      },
+      create: {
+        hhUserId: hhUser.id,
+        email: hhUser.email,
+        accessToken: encryptedAccessToken,
+        refreshToken: encryptedRefreshToken,
+        tokenExpiresAt: expiresAt,
+      },
+    });
+
+    // Создаем настройки по умолчанию, если их нет
+    await prisma.settings.upsert({
+      where: { userId: user.id },
+      update: {},
+      create: {
+        userId: user.id,
+        enabled: false,
+        maxResponsesPerDay: 200,
+        useAiGeneration: false,
+        scheduleEnabled: false,
+      },
+    });
+
+    // Генерируем JWT токен
+    const jwtToken = generateToken(user.id);
+
+    // Редиректим на frontend с токеном
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    res.redirect(`${frontendUrl}/auth/callback?token=${jwtToken}`);
+
+  } catch (error: any) {
+    logger.error('OAuth callback error:', error);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    res.redirect(`${frontendUrl}/auth/error?message=${encodeURIComponent(error.message)}`);
+  }
+});
+
 app.use('/api/resumes', resumesRoutes);
 app.use('/api/vacancies', vacanciesRoutes);
 app.use('/api/applications', applicationsRoutes);
