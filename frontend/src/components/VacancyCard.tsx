@@ -18,14 +18,14 @@ export const VacancyCard = ({ vacancy, onApply, applied }: VacancyCardProps) => 
     >
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
-          <h3 className="text-xl font-semibold text-dark-50 mb-2">
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">
             {vacancy.name}
           </h3>
-          <p className="text-dark-300">{vacancy.employer.name}</p>
+          <p className="text-gray-600">{vacancy.employer.name}</p>
         </div>
         {vacancy.salary && (
           <div className="text-right ml-4">
-            <p className="text-lg font-bold text-primary-400">
+            <p className="text-lg font-bold text-primary-500">
               {vacancy.salary.from && `от ${vacancy.salary.from.toLocaleString()}`}
               {vacancy.salary.to && ` до ${vacancy.salary.to.toLocaleString()}`}
               {' '}{vacancy.salary.currency}
@@ -34,14 +34,14 @@ export const VacancyCard = ({ vacancy, onApply, applied }: VacancyCardProps) => 
         )}
       </div>
 
-      <div className="flex items-center gap-4 text-sm text-dark-400 mb-4">
+      <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
         <span>📍 {vacancy.area.name}</span>
         <span>📅 {new Date(vacancy.published_at).toLocaleDateString('ru-RU')}</span>
       </div>
 
       {vacancy.snippet?.requirement && (
         <div className="mb-4">
-          <p className="text-sm text-dark-300" dangerouslySetInnerHTML={{ __html: vacancy.snippet.requirement }} />
+          <p className="text-sm text-gray-600" dangerouslySetInnerHTML={{ __html: vacancy.snippet.requirement }} />
         </div>
       )}
 

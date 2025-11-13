@@ -12,7 +12,7 @@ export const Card = ({ children, className = '', hover = true }: CardProps) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={hover ? { y: -4, borderColor: '#00b390' } : {}}
+      whileHover={hover ? { y: -4, borderColor: '#D6001C' } : {}}
       transition={{ duration: 0.2 }}
       className={`card ${className}`}
     >
