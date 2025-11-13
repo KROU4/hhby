@@ -10,6 +10,8 @@ import { Dashboard } from './pages/Dashboard';
 import { Search } from './pages/Search';
 import { Settings } from './pages/Settings';
 import { Applications } from './pages/Applications';
+import { History } from './pages/History';
+import { Favorites } from './pages/Favorites';
 
 // Protected route wrapper
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -83,6 +85,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <Settings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/history"
+            element={
+              <ProtectedRoute>
+                <History />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/favorites"
+            element={
+              <ProtectedRoute>
+                <Favorites />
               </ProtectedRoute>
             }
           />

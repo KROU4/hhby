@@ -93,4 +93,166 @@ router.get('/:id', async (req: AuthRequest, res) => {
   }
 });
 
+// POST /api/vacancies/:id/view - Отметить вакансию как просмотренную
+router.post('/:id/view', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    const vacancyId = req.params.id;
+
+    // Проверяем, что вакансия существует
+    const job = await prisma.job.findUnique({
+      where: { hhJobId: vacancyId },
+    });
+
+    if (!job) {
+      return res.status(404).json({ error: 'Vacancy not found' });
+    }
+
+    // Добавляем в историю просмотров (или обновляем время просмотра)
+    const view = await prisma.vacancyView.upsert({
+      where: {
+        userId_jobId: {
+          userId,
+          jobId: job.id,
+        },
+      },
+      update: {
+        viewedAt: new Date(),
+      },
+      create: {
+        userId,
+        jobId: job.id,
+      },
+    });
+
+    res.json({ success: true, view });
+  } catch (error: any) {
+    logger.error('Mark vacancy as viewed error:', error);
+    res.status(500).json({ error: 'Failed to mark vacancy as viewed' });
+  }
+});
+
+// GET /api/vacancies/history - Получить историю просмотров
+router.get('/history/list', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    const { limit = 50, offset = 0 } = req.query;
+
+    const views = await prisma.vacancyView.findMany({
+      where: { userId },
+      include: {
+        job: true,
+      },
+      orderBy: {
+        viewedAt: 'desc',
+      },
+      take: Number(limit),
+      skip: Number(offset),
+    });
+
+    res.json(views);
+  } catch (error: any) {
+    logger.error('Get vacancy history error:', error);
+    res.status(500).json({ error: 'Failed to get vacancy history' });
+  }
+});
+
+// POST /api/vacancies/:id/favorite - Добавить в избранное
+router.post('/:id/favorite', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    const vacancyId = req.params.id;
+
+    // Проверяем, что вакансия существует
+    const job = await prisma.job.findUnique({
+      where: { hhJobId: vacancyId },
+    });
+
+    if (!job) {
+      return res.status(404).json({ error: 'Vacancy not found' });
+    }
+
+    // Проверяем, не добавлена ли уже в избранное
+    const existingFavorite = await prisma.vacancyFavorite.findUnique({
+      where: {
+        userId_jobId: {
+          userId,
+          jobId: job.id,
+        },
+      },
+    });
+
+    if (existingFavorite) {
+      return res.status(400).json({ error: 'Vacancy already in favorites' });
+    }
+
+    // Добавляем в избранное
+    const favorite = await prisma.vacancyFavorite.create({
+      data: {
+        userId,
+        jobId: job.id,
+      },
+    });
+
+    res.json({ success: true, favorite });
+  } catch (error: any) {
+    logger.error('Add to favorites error:', error);
+    res.status(500).json({ error: 'Failed to add to favorites' });
+  }
+});
+
+// DELETE /api/vacancies/:id/favorite - Удалить из избранного
+router.delete('/:id/favorite', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+    const vacancyId = req.params.id;
+
+    // Находим вакансию
+    const job = await prisma.job.findUnique({
+      where: { hhJobId: vacancyId },
+    });
+
+    if (!job) {
+      return res.status(404).json({ error: 'Vacancy not found' });
+    }
+
+    // Удаляем из избранного
+    await prisma.vacancyFavorite.delete({
+      where: {
+        userId_jobId: {
+          userId,
+          jobId: job.id,
+        },
+      },
+    });
+
+    res.json({ success: true });
+  } catch (error: any) {
+    logger.error('Remove from favorites error:', error);
+    res.status(500).json({ error: 'Failed to remove from favorites' });
+  }
+});
+
+// GET /api/vacancies/favorites/list - Получить избранные вакансии
+router.get('/favorites/list', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+
+    const favorites = await prisma.vacancyFavorite.findMany({
+      where: { userId },
+      include: {
+        job: true,
+      },
+      orderBy: {
+        addedAt: 'desc',
+      },
+    });
+
+    res.json(favorites);
+  } catch (error: any) {
+    logger.error('Get favorites error:', error);
+    res.status(500).json({ error: 'Failed to get favorites' });
+  }
+});
+
 export default router;

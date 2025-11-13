@@ -34,6 +34,15 @@ export const api = {
         page: number;
       }>('/api/vacancies/search', { params }),
     getOne: (id: string) => apiClient.get<Vacancy>(`/api/vacancies/${id}`),
+    markAsViewed: (id: string) => apiClient.post(`/api/vacancies/${id}/view`),
+    getHistory: (limit = 50, offset = 0) =>
+      apiClient.get<Array<{ id: string; viewedAt: string; job: any }>>('/api/vacancies/history/list', {
+        params: { limit, offset },
+      }),
+    addToFavorites: (id: string) => apiClient.post(`/api/vacancies/${id}/favorite`),
+    removeFromFavorites: (id: string) => apiClient.delete(`/api/vacancies/${id}/favorite`),
+    getFavorites: () =>
+      apiClient.get<Array<{ id: string; addedAt: string; job: any }>>('/api/vacancies/favorites/list'),
   },
 
   // Applications

@@ -13,6 +13,7 @@ export const Search = () => {
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [loading, setLoading] = useState(false);
   const [appliedVacancies, setAppliedVacancies] = useState<Set<string>>(new Set());
+  const [favoriteVacancies, setFavoriteVacancies] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalVacancies, setTotalVacancies] = useState(0);
@@ -31,6 +32,7 @@ export const Search = () => {
   useEffect(() => {
     fetchResumes();
     fetchApplications();
+    fetchFavorites();
   }, []);
 
   const fetchResumes = async () => {
@@ -49,6 +51,16 @@ export const Search = () => {
       setAppliedVacancies(vacancyIds);
     } catch (error) {
       console.error('Failed to fetch applications:', error);
+    }
+  };
+
+  const fetchFavorites = async () => {
+    try {
+      const { data } = await api.vacancies.getFavorites();
+      const vacancyIds = new Set(data.map(fav => fav.job?.hhJobId).filter(Boolean) as string[]);
+      setFavoriteVacancies(vacancyIds);
+    } catch (error) {
+      console.error('Failed to fetch favorites:', error);
     }
   };
 
@@ -100,6 +112,26 @@ export const Search = () => {
       addToast('Отклик успешно отправлен!', 'success');
     } catch (error: any) {
       addToast(error.response?.data?.error || 'Не удалось отправить отклик', 'error');
+    }
+  };
+
+  const handleToggleFavorite = async (vacancyId: string, isFavorite: boolean) => {
+    try {
+      if (isFavorite) {
+        await api.vacancies.removeFromFavorites(vacancyId);
+        setFavoriteVacancies(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(vacancyId);
+          return newSet;
+        });
+        addToast('Удалено из избранного', 'success');
+      } else {
+        await api.vacancies.addToFavorites(vacancyId);
+        setFavoriteVacancies(prev => new Set([...prev, vacancyId]));
+        addToast('Добавлено в избранное', 'success');
+      }
+    } catch (error: any) {
+      addToast(error.response?.data?.error || 'Не удалось обновить избранное', 'error');
     }
   };
 
@@ -202,6 +234,8 @@ export const Search = () => {
                 resumes={resumes}
                 onApply={handleApply}
                 applied={appliedVacancies.has(vacancy.id)}
+                isFavorite={favoriteVacancies.has(vacancy.id)}
+                onToggleFavorite={handleToggleFavorite}
               />
             ))}
           </div>

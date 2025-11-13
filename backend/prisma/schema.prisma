@@ -28,6 +28,8 @@ model User {
   settings   Settings?
   applications JobApplication[]
   analytics  Analytics[]
+  vacancyViews VacancyView[]
+  vacancyFavorites VacancyFavorite[]
 }
 
 // Резюме пользователя
@@ -93,6 +95,8 @@ model Job {
 
   // Отношения
   applications JobApplication[]
+  views VacancyView[]
+  favorites VacancyFavorite[]
 }
 
 // Отклик на вакансию
@@ -136,4 +140,36 @@ model Analytics {
   rejectionsCount  Int @default(0)
 
   @@unique([userId, date])
+}
+
+// История просмотров вакансий
+model VacancyView {
+  id        String   @id @default(uuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  viewedAt  DateTime @default(now())
+
+  @@unique([userId, jobId])
+  @@index([userId, viewedAt])
+}
+
+// Избранные вакансии
+model VacancyFavorite {
+  id        String   @id @default(uuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  addedAt   DateTime @default(now())
+
+  @@unique([userId, jobId])
+  @@index([userId, addedAt])
 }

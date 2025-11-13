@@ -8,9 +8,18 @@ interface VacancyCardProps {
   resumes?: Resume[];
   onApply?: (vacancyId: string, resumeId?: string) => void;
   applied?: boolean;
+  isFavorite?: boolean;
+  onToggleFavorite?: (vacancyId: string, isFavorite: boolean) => void;
 }
 
-export const VacancyCard = ({ vacancy, resumes = [], onApply, applied }: VacancyCardProps) => {
+export const VacancyCard = ({
+  vacancy,
+  resumes = [],
+  onApply,
+  applied,
+  isFavorite = false,
+  onToggleFavorite
+}: VacancyCardProps) => {
   const [selectedResumeId, setSelectedResumeId] = useState<string>(resumes[0]?.id || '');
 
   return (
@@ -22,9 +31,20 @@ export const VacancyCard = ({ vacancy, resumes = [], onApply, applied }: Vacancy
     >
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            {vacancy.name}
-          </h3>
+          <div className="flex items-start gap-2">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2 flex-1">
+              {vacancy.name}
+            </h3>
+            {onToggleFavorite && (
+              <button
+                onClick={() => onToggleFavorite(vacancy.id, isFavorite)}
+                className="text-2xl hover:scale-110 transition-transform"
+                title={isFavorite ? 'Удалить из избранного' : 'Добавить в избранное'}
+              >
+                {isFavorite ? '⭐' : '☆'}
+              </button>
+            )}
+          </div>
           <p className="text-gray-600">{vacancy.employer.name}</p>
         </div>
         {vacancy.salary && (

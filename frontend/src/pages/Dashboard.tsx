@@ -298,7 +298,7 @@ export const Dashboard = () => {
         <h2 className="text-2xl font-semibold text-gray-900 mb-6">
           Быстрые действия
         </h2>
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card className="cursor-pointer" onClick={() => window.location.href = '/search'}>
             <div className="text-4xl mb-4">🔍</div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -306,6 +306,26 @@ export const Dashboard = () => {
             </h3>
             <p className="text-gray-600">
               Найдите подходящие вакансии и откликнитесь вручную
+            </p>
+          </Card>
+
+          <Card className="cursor-pointer" onClick={() => window.location.href = '/favorites'}>
+            <div className="text-4xl mb-4">⭐</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Избранное
+            </h3>
+            <p className="text-gray-600">
+              Просмотрите избранные вакансии
+            </p>
+          </Card>
+
+          <Card className="cursor-pointer" onClick={() => window.location.href = '/history'}>
+            <div className="text-4xl mb-4">📖</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              История просмотров
+            </h3>
+            <p className="text-gray-600">
+              Вакансии, которые вы просматривали ранее
             </p>
           </Card>
 
