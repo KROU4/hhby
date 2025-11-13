@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/authStore';
 
 export const Navbar = () => {
   const location = useLocation();
   const { isAuthenticated, user, logout } = useAuthStore();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const links = [
     { path: '/dashboard', label: 'Dashboard', icon: '🏠' },
@@ -26,7 +28,8 @@ export const Navbar = () => {
             <span className="text-xl font-bold text-gray-900">Auto-Responder</span>
           </Link>
 
-          <div className="flex items-center gap-6">
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-6">
             {links.map((link) => (
               <Link
                 key={link.path}
@@ -50,7 +53,8 @@ export const Navbar = () => {
             ))}
           </div>
 
-          <div className="flex items-center gap-4">
+          {/* Desktop User Menu */}
+          <div className="hidden md:flex items-center gap-4">
             <span className="text-sm text-gray-600">{user?.email}</span>
             <button
               onClick={logout}
@@ -59,7 +63,75 @@ export const Navbar = () => {
               Выйти
             </button>
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="md:hidden p-2 text-gray-600 hover:text-primary-500 transition-colors"
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              {isMobileMenuOpen ? (
+                <path d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden overflow-hidden"
+            >
+              <div className="pt-4 pb-2 space-y-2">
+                {links.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`
+                      flex items-center gap-3 px-4 py-3 rounded-lg transition-colors
+                      ${location.pathname === link.path
+                        ? 'bg-primary-500 text-white'
+                        : 'text-gray-600 hover:bg-gray-100'
+                      }
+                    `}
+                  >
+                    <span className="text-xl">{link.icon}</span>
+                    <span className="font-medium">{link.label}</span>
+                  </Link>
+                ))}
+
+                <div className="border-t border-gray-200 mt-4 pt-4 px-4">
+                  <p className="text-sm text-gray-600 mb-3">{user?.email}</p>
+                  <button
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                  >
+                    Выйти
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   );

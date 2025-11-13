@@ -3,14 +3,22 @@ import { motion } from 'framer-motion';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { VacancyCard } from '../components/VacancyCard';
+import { Pagination } from '../components/Pagination';
 import { api } from '../api';
 import { Vacancy, Resume } from '../types';
+import { useToastStore } from '../store/toastStore';
 
 export const Search = () => {
   const [vacancies, setVacancies] = useState<Vacancy[]>([]);
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [loading, setLoading] = useState(false);
   const [appliedVacancies, setAppliedVacancies] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalVacancies, setTotalVacancies] = useState(0);
+  const { addToast } = useToastStore();
+
+  const itemsPerPage = 10;
 
   const [filters, setFilters] = useState({
     text: '',
@@ -44,7 +52,7 @@ export const Search = () => {
     }
   };
 
-  const handleSearch = async () => {
+  const handleSearch = async (page: number = 1) => {
     setLoading(true);
     try {
       const { data } = await api.vacancies.search({
@@ -53,19 +61,29 @@ export const Search = () => {
         salary: filters.salary ? parseInt(filters.salary) : undefined,
         experience: filters.experience || undefined,
         schedule: filters.schedule || undefined,
-        per_page: 20,
+        per_page: itemsPerPage,
+        page: page - 1, // HH API is 0-indexed
       });
       setVacancies(data.items);
+      setTotalVacancies(data.found || 0);
+      setTotalPages(Math.ceil((data.found || 0) / itemsPerPage));
+      setCurrentPage(page);
     } catch (error) {
       console.error('Search failed:', error);
+      addToast('Ошибка поиска вакансий', 'error');
     } finally {
       setLoading(false);
     }
   };
 
+  const handlePageChange = (page: number) => {
+    handleSearch(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleApply = async (vacancyId: string) => {
     if (resumes.length === 0) {
-      alert('Сначала добавьте резюме!');
+      addToast('Сначала добавьте резюме в настройках!', 'warning');
       return;
     }
 
@@ -76,9 +94,9 @@ export const Search = () => {
         message: 'Здравствуйте! Я заинтересован в данной вакансии.',
       });
       setAppliedVacancies(prev => new Set([...prev, vacancyId]));
-      alert('Отклик успешно отправлен!');
+      addToast('Отклик успешно отправлен!', 'success');
     } catch (error: any) {
-      alert('Ошибка: ' + (error.response?.data?.error || 'Не удалось отправить отклик'));
+      addToast(error.response?.data?.error || 'Не удалось отправить отклик', 'error');
     }
   };
 
@@ -157,7 +175,7 @@ export const Search = () => {
           </div>
         </div>
 
-        <Button onClick={handleSearch} disabled={loading}>
+        <Button onClick={() => handleSearch(1)} disabled={loading}>
           {loading ? 'Поиск...' : '🔍 Найти вакансии'}
         </Button>
       </div>
@@ -171,7 +189,7 @@ export const Search = () => {
       ) : vacancies.length > 0 ? (
         <div>
           <p className="text-gray-600 mb-6">
-            Найдено вакансий: {vacancies.length}
+            Найдено вакансий: {totalVacancies.toLocaleString()}
           </p>
           <div className="space-y-6">
             {vacancies.map((vacancy) => (
@@ -183,6 +201,12 @@ export const Search = () => {
               />
             ))}
           </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       ) : (
         <div className="text-center py-12">

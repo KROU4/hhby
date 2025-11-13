@@ -5,12 +5,14 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { api } from '../api';
 import { Settings as SettingsType, Resume } from '../types';
+import { useToastStore } from '../store/toastStore';
 
 export const Settings = () => {
   const [settings, setSettings] = useState<SettingsType | null>(null);
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { addToast } = useToastStore();
 
   const [formData, setFormData] = useState({
     enabled: false,
@@ -49,6 +51,7 @@ export const Settings = () => {
       });
     } catch (error) {
       console.error('Failed to fetch settings:', error);
+      addToast('Не удалось загрузить настройки', 'error');
     } finally {
       setLoading(false);
     }
@@ -74,11 +77,11 @@ export const Settings = () => {
           : [],
       });
 
-      alert('Настройки сохранены!');
+      addToast('Настройки успешно сохранены!', 'success');
       fetchData();
     } catch (error) {
       console.error('Failed to save settings:', error);
-      alert('Ошибка при сохранении настроек');
+      addToast('Ошибка при сохранении настроек', 'error');
     } finally {
       setSaving(false);
     }
@@ -88,10 +91,10 @@ export const Settings = () => {
     try {
       const { data } = await api.resumes.getAll();
       setResumes(data);
-      alert('Резюме синхронизированы!');
+      addToast('Резюме успешно синхронизированы!', 'success');
     } catch (error) {
       console.error('Failed to sync resumes:', error);
-      alert('Ошибка синхронизации');
+      addToast('Ошибка синхронизации резюме', 'error');
     }
   };
 

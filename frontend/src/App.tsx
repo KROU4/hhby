@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 
 import { Navbar } from './components/Navbar';
+import { ToastContainer } from './components/Toast';
 import { Landing } from './pages/Landing';
 import { AuthCallback } from './pages/AuthCallback';
 import { Dashboard } from './pages/Dashboard';
@@ -19,7 +20,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-dark-300">Загрузка...</p>
+          <p className="text-gray-600">Загрузка...</p>
         </div>
       </div>
     );
@@ -42,6 +43,7 @@ function App() {
     <BrowserRouter>
       <div className="min-h-screen">
         <Navbar />
+        <ToastContainer />
         <Routes>
           {/* Public routes */}
           <Route

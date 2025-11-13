@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Card } from '../components/Card';
+import { Pagination } from '../components/Pagination';
 import { api } from '../api';
 import { JobApplication } from '../types';
 
@@ -8,6 +9,9 @@ export const Applications = () => {
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'sent' | 'viewed' | 'invited'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchApplications();
@@ -24,10 +28,31 @@ export const Applications = () => {
     }
   };
 
-  const filteredApplications = applications.filter(app => {
-    if (filter === 'all') return true;
-    return app.status === filter;
-  });
+  const filteredApplications = useMemo(() => {
+    const filtered = applications.filter(app => {
+      if (filter === 'all') return true;
+      return app.status === filter;
+    });
+    return filtered;
+  }, [applications, filter]);
+
+  const paginatedApplications = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredApplications.slice(startIndex, endIndex);
+  }, [filteredApplications, currentPage]);
+
+  const totalPages = Math.ceil(filteredApplications.length / itemsPerPage);
+
+  const handleFilterChange = (newFilter: 'all' | 'sent' | 'viewed' | 'invited') => {
+    setFilter(newFilter);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -76,7 +101,7 @@ export const Applications = () => {
       </motion.div>
 
       {/* Filters */}
-      <div className="flex gap-3 mb-8">
+      <div className="flex flex-wrap gap-3 mb-8">
         {[
           { key: 'all', label: 'Все', count: applications.length },
           { key: 'sent', label: 'Отправлены', count: applications.filter(a => a.status === 'sent').length },
@@ -85,7 +110,7 @@ export const Applications = () => {
         ].map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setFilter(tab.key as any)}
+            onClick={() => handleFilterChange(tab.key as any)}
             className={`
               px-6 py-3 rounded-lg font-medium transition-all
               ${filter === tab.key
@@ -100,61 +125,72 @@ export const Applications = () => {
       </div>
 
       {/* Applications list */}
-      {filteredApplications.length > 0 ? (
-        <div className="space-y-4">
-          {filteredApplications.map((application) => (
-            <motion.div
-              key={application.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <Card>
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                      {application.job?.title || 'Вакансия удалена'}
-                    </h3>
-                    <p className="text-gray-600">{application.job?.company}</p>
-                  </div>
-                  <div className="text-right ml-4">
-                    <p className={`font-medium ${getStatusColor(application.status)}`}>
-                      {getStatusText(application.status)}
-                    </p>
-                    {application.job?.salary && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        {application.job.salary}
+      {paginatedApplications.length > 0 ? (
+        <div>
+          <p className="text-gray-600 mb-6">
+            Показано {paginatedApplications.length} из {filteredApplications.length} откликов
+          </p>
+          <div className="space-y-4">
+            {paginatedApplications.map((application) => (
+              <motion.div
+                key={application.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <Card>
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                        {application.job?.title || 'Вакансия удалена'}
+                      </h3>
+                      <p className="text-gray-600">{application.job?.company}</p>
+                    </div>
+                    <div className="text-right ml-4">
+                      <p className={`font-medium ${getStatusColor(application.status)}`}>
+                        {getStatusText(application.status)}
                       </p>
-                    )}
+                      {application.job?.salary && (
+                        <p className="text-sm text-gray-600 mt-1">
+                          {application.job.salary}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
-                  <span>📍 {application.job?.location || 'Не указано'}</span>
-                  <span>📅 {new Date(application.sentAt).toLocaleDateString('ru-RU')}</span>
-                  <span>📄 {application.resume?.title}</span>
-                </div>
-
-                {application.letterContent && (
-                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <p className="text-sm text-gray-600 whitespace-pre-wrap">
-                      {application.letterContent}
-                    </p>
+                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                    <span>📍 {application.job?.location || 'Не указано'}</span>
+                    <span>📅 {new Date(application.sentAt).toLocaleDateString('ru-RU')}</span>
+                    <span>📄 {application.resume?.title}</span>
                   </div>
-                )}
 
-                {application.job?.url && (
-                  <a
-                    href={application.job.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block mt-4 text-primary-400 hover:text-primary-300 transition-colors"
-                  >
-                    Открыть на HH →
-                  </a>
-                )}
-              </Card>
-            </motion.div>
-          ))}
+                  {application.letterContent && (
+                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <p className="text-sm text-gray-600 whitespace-pre-wrap">
+                        {application.letterContent}
+                      </p>
+                    </div>
+                  )}
+
+                  {application.job?.url && (
+                    <a
+                      href={application.job.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block mt-4 text-primary-500 hover:text-primary-600 transition-colors"
+                    >
+                      Открыть на HH →
+                    </a>
+                  )}
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
         </div>
       ) : (
         <div className="text-center py-12">
