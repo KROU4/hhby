@@ -42,10 +42,26 @@ app.use('/auth', authRoutes);
 // Callback endpoint для HH.ru OAuth (зарегистрирован как http://localhost:8080/callback)
 app.get('/callback', async (req, res) => {
   try {
-    const { code } = req.query;
+    // Детальное логирование для отладки
+    logger.info('Callback received');
+    logger.info('Query params:', req.query);
+    logger.info('Full URL:', req.url);
+
+    const { code, error, error_description } = req.query;
+
+    // Проверяем наличие ошибки от HH.ru
+    if (error) {
+      logger.error('HH.ru OAuth error:', error, error_description);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      return res.redirect(`${frontendUrl}/auth/error?message=${encodeURIComponent(error_description as string || error as string)}`);
+    }
 
     if (!code || typeof code !== 'string') {
-      return res.status(400).json({ error: 'Authorization code is required' });
+      logger.error('No code received in callback. Query:', req.query);
+      return res.status(400).json({
+        error: 'Authorization code is required',
+        received: req.query
+      });
     }
 
     logger.info('Received authorization code, exchanging for token...');
