@@ -100,7 +100,7 @@ export const Settings = () => {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-dark-300">Загрузка...</p>
+          <p className="text-gray-600">Загрузка...</p>
         </div>
       </div>
     );
@@ -116,7 +116,7 @@ export const Settings = () => {
         <h1 className="text-4xl font-bold gradient-text mb-4">
           Настройки
         </h1>
-        <p className="text-dark-400">
+        <p className="text-gray-600">
           Настройте параметры автоматической рассылки откликов
         </p>
       </motion.div>
@@ -124,7 +124,7 @@ export const Settings = () => {
       {/* Resumes */}
       <Card className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-semibold text-dark-50">
+          <h2 className="text-2xl font-semibold text-gray-900">
             Резюме
           </h2>
           <Button variant="secondary" onClick={syncResumes}>
@@ -137,17 +137,17 @@ export const Settings = () => {
             {resumes.map((resume) => (
               <div
                 key={resume.id}
-                className="p-4 bg-dark-800 rounded-lg border border-dark-700"
+                className="p-4 bg-gray-50 rounded-lg border border-gray-200"
               >
-                <p className="text-dark-50 font-medium">{resume.title}</p>
-                <p className="text-sm text-dark-400 mt-1">
+                <p className="text-gray-900 font-medium">{resume.title}</p>
+                <p className="text-sm text-gray-600 mt-1">
                   Обновлено: {new Date(resume.updatedAt).toLocaleDateString('ru-RU')}
                 </p>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-dark-400">
+          <p className="text-gray-600">
             Резюме не найдены. Создайте резюме на HH.ru и синхронизируйте.
           </p>
         )}
@@ -155,15 +155,15 @@ export const Settings = () => {
 
       {/* Auto-responder settings */}
       <Card className="mb-8">
-        <h2 className="text-2xl font-semibold text-dark-50 mb-6">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-6">
           Автоматическая рассылка
         </h2>
 
         <div className="space-y-6">
-          <div className="flex items-center justify-between p-4 bg-dark-800 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div>
-              <p className="text-dark-50 font-medium">Включить автоматические отклики</p>
-              <p className="text-sm text-dark-400 mt-1">
+              <p className="text-gray-900 font-medium">Включить автоматические отклики</p>
+              <p className="text-sm text-gray-600 mt-1">
                 Бот будет автоматически откликаться на подходящие вакансии
               </p>
             </div>
@@ -171,7 +171,7 @@ export const Settings = () => {
               onClick={() => setFormData({ ...formData, enabled: !formData.enabled })}
               className={`
                 relative w-14 h-8 rounded-full transition-colors
-                ${formData.enabled ? 'bg-primary-500' : 'bg-dark-700'}
+                ${formData.enabled ? 'bg-primary-500' : 'bg-gray-300'}
               `}
             >
               <div
@@ -196,7 +196,7 @@ export const Settings = () => {
 
       {/* Search filters */}
       <Card className="mb-8">
-        <h2 className="text-2xl font-semibold text-dark-50 mb-6">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-6">
           Фильтры поиска
         </h2>
 
@@ -234,11 +234,11 @@ export const Settings = () => {
 
       {/* Cover letter */}
       <Card className="mb-8">
-        <h2 className="text-2xl font-semibold text-dark-50 mb-6">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-6">
           Сопроводительное письмо
         </h2>
 
-        <p className="text-sm text-dark-400 mb-4">
+        <p className="text-sm text-gray-600 mb-4">
           Доступные переменные: {'{название вакансии}'}, {'{компания}'}, {'{зарплата}'}
         </p>
 

@@ -92,7 +92,7 @@ export const Search = () => {
         <h1 className="text-4xl font-bold gradient-text mb-4">
           Поиск вакансий
         </h1>
-        <p className="text-dark-400">
+        <p className="text-gray-600">
           Найдите подходящие вакансии и откликнитесь
         </p>
       </motion.div>
@@ -123,7 +123,7 @@ export const Search = () => {
 
         <div className="grid md:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm font-medium text-dark-200 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Опыт работы
             </label>
             <select
@@ -140,7 +140,7 @@ export const Search = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-dark-200 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               График работы
             </label>
             <select
@@ -166,11 +166,11 @@ export const Search = () => {
       {loading ? (
         <div className="text-center py-12">
           <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-dark-300">Поиск вакансий...</p>
+          <p className="text-gray-600">Поиск вакансий...</p>
         </div>
       ) : vacancies.length > 0 ? (
         <div>
-          <p className="text-dark-400 mb-6">
+          <p className="text-gray-600 mb-6">
             Найдено вакансий: {vacancies.length}
           </p>
           <div className="space-y-6">
@@ -186,7 +186,7 @@ export const Search = () => {
         </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-dark-400">
+          <p className="text-gray-600">
             Введите параметры поиска и нажмите "Найти вакансии"
           </p>
         </div>
