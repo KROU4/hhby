@@ -6,6 +6,9 @@ import { logger } from '../utils/logger';
 import { applicationLimiter } from '../middleware/rateLimiter';
 import { validateBody, createApplicationSchema } from '../middleware/validation';
 import { getValidAccessToken } from '../utils/tokenRefresh';
+import { checkSubscriptionLimits } from '../middleware/subscriptionCheck';
+import { createAuditLog, AuditActions } from '../utils/auditLog';
+import { incrementDailyCounter } from '../utils/subscriptionManager';
 
 const router = Router();
 
@@ -13,7 +16,7 @@ const router = Router();
 router.use(authMiddleware);
 
 // POST /api/applications - Отправить отклик на вакансию
-router.post('/', applicationLimiter, validateBody(createApplicationSchema), async (req: AuthRequest, res) => {
+router.post('/', applicationLimiter, checkSubscriptionLimits, validateBody(createApplicationSchema), async (req: AuthRequest, res) => {
   try {
     const userId = req.userId!;
     const { vacancyId, resumeId, message } = req.body;
@@ -105,14 +108,40 @@ router.post('/', applicationLimiter, validateBody(createApplicationSchema), asyn
       },
     });
 
+    // Increment daily counter
+    await incrementDailyCounter(userId);
+
+    // Audit log
+    await createAuditLog({
+      userId,
+      action: AuditActions.APPLICATION_SENT,
+      resource: vacancyId,
+      details: { jobTitle: job.title, company: job.company },
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
     res.json({
       success: true,
       application,
       negotiation,
+      limits: req.limits, // Include remaining limit info
     });
 
   } catch (error: any) {
     logger.error('Apply to vacancy error:', error);
+
+    // Audit log for failed application
+    await createAuditLog({
+      userId: req.userId!,
+      action: AuditActions.APPLICATION_SENT,
+      resource: req.body.vacancyId,
+      success: false,
+      errorMessage: error.message,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
     res.status(500).json({ error: error.message || 'Failed to apply to vacancy' });
   }
 });

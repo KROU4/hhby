@@ -20,6 +20,13 @@ model User {
   refreshToken   String?  // Зашифрованный
   tokenExpiresAt DateTime?
 
+  // Подписка
+  subscriptionTier String @default("free") // free, basic, pro, ultimate
+  subscriptionExpiresAt DateTime?
+  dailyResponsesLimit Int @default(20)
+  responsesToday Int @default(0)
+  lastResetDate DateTime @default(now())
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -32,6 +39,9 @@ model User {
   vacancyFavorites VacancyFavorite[]
   searchHistory SearchHistory[]
   applicationDrafts ApplicationDraft[]
+  sessions Session[]
+  auditLogs AuditLog[]
+  subscriptions Subscription[]
 }
 
 // Резюме пользователя
@@ -222,4 +232,85 @@ model ApplicationDraft {
   updatedAt DateTime @updatedAt
 
   @@index([userId, updatedAt])
+}
+
+// Сессии пользователя
+model Session {
+  id        String   @id @default(uuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Данные сессии
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  deviceInfo String? // JSON с информацией об устройстве
+  location  String?  // Город/страна
+
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  lastActivityAt DateTime @default(now())
+
+  @@index([userId, lastActivityAt])
+  @@index([token])
+}
+
+// Журнал действий (Audit Log)
+model AuditLog {
+  id        String   @id @default(uuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Данные действия
+  action    String   // login, logout, application_sent, settings_updated, etc.
+  resource  String?  // vacancyId, settingsId, etc.
+  details   String?  // JSON с дополнительными деталями
+
+  // Метаданные
+  ipAddress String?
+  userAgent String?
+  success   Boolean  @default(true)
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([action])
+}
+
+// Подписки
+model Subscription {
+  id        String   @id @default(uuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Данные подписки
+  tier      String   // free, basic, pro, ultimate
+  status    String   @default("active") // active, cancelled, expired, trial
+
+  // Оплата
+  amount    Float?
+  currency  String   @default("RUB")
+  paymentMethod String? // stripe, paypal, etc.
+  stripeSubscriptionId String? @unique
+  paypalSubscriptionId String? @unique
+
+  // Даты
+  startDate DateTime @default(now())
+  endDate   DateTime?
+  cancelledAt DateTime?
+  trialEndsAt DateTime?
+
+  // Реферальная программа
+  referralCode String? @unique
+  referredBy   String? // userId who referred this user
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([referralCode])
 }
