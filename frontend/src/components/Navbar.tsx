@@ -16,6 +16,8 @@ export const Navbar = () => {
     { path: '/employers', label: 'Работодатели', icon: '🏢' },
     { path: '/favorites', label: 'Избранное', icon: '⭐' },
     { path: '/history', label: 'История', icon: '📖' },
+    { path: '/subscription', label: 'Подписка', icon: '💎' },
+    { path: '/sessions', label: 'Сессии', icon: '🔐' },
     { path: '/settings', label: 'Настройки', icon: '⚙️' },
   ];
 

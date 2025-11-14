@@ -7,6 +7,8 @@ import { Navbar } from './components/Navbar';
 import { ToastContainer } from './components/Toast';
 import { ShortcutsModal } from './components/ShortcutsModal';
 import { Onboarding } from './components/Onboarding';
+import { UpgradeModal } from './components/UpgradeModal';
+import { useUpgradeModalStore } from './store/upgradeModalStore';
 import { Landing } from './pages/Landing';
 import { AuthCallback } from './pages/AuthCallback';
 import { Dashboard } from './pages/Dashboard';
@@ -16,6 +18,8 @@ import { Applications } from './pages/Applications';
 import { History } from './pages/History';
 import { Favorites } from './pages/Favorites';
 import { Employers } from './pages/Employers';
+import { Subscription } from './pages/Subscription';
+import { Sessions } from './pages/Sessions';
 
 // Protected route wrapper
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -37,6 +41,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 function App() {
   const { isAuthenticated, fetchUser } = useAuthStore();
+  const { isOpen, reason, lockedFeature, closeModal } = useUpgradeModalStore();
   useKeyboardShortcuts();
 
   useEffect(() => {
@@ -53,6 +58,12 @@ function App() {
         <ToastContainer />
         <ShortcutsModal />
         <Onboarding />
+        <UpgradeModal
+          isOpen={isOpen}
+          onClose={closeModal}
+          reason={reason}
+          lockedFeature={lockedFeature}
+        />
         <Routes>
           {/* Public routes */}
           <Route
@@ -116,6 +127,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <Employers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/subscription"
+            element={
+              <ProtectedRoute>
+                <Subscription />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sessions"
+            element={
+              <ProtectedRoute>
+                <Sessions />
               </ProtectedRoute>
             }
           />

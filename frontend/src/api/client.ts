@@ -18,13 +18,20 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle auth errors
+// Handle auth errors and rate limits
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/';
+    } else if (error.response?.status === 429) {
+      // Handle rate limit / subscription limit
+      // Import dynamically to avoid circular dependencies
+      import('../store/upgradeModalStore').then(({ useUpgradeModalStore }) => {
+        const { openModal } = useUpgradeModalStore.getState();
+        openModal('limit_reached');
+      });
     }
     return Promise.reject(error);
   }

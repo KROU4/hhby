@@ -181,4 +181,16 @@ export const api = {
     }) => apiClient.post('/api/search/drafts', data),
     deleteDraft: (id: string) => apiClient.delete(`/api/search/drafts/${id}`),
   },
+
+  // Account  
+  account: {
+    getProfile: () => apiClient.get('/api/account/profile'),
+    getSessions: () => apiClient.get('/api/account/sessions'),
+    terminateSession: (id: string) => apiClient.delete(`/api/account/sessions/${id}`),
+    terminateAllSessions: () => apiClient.post('/api/account/sessions/terminate-all'),
+    getAuditLog: (params?: { action?: string; limit?: number; offset?: number }) =>
+      apiClient.get('/api/account/audit-log', { params }),
+    getSubscription: () => apiClient.get('/api/account/subscription'),
+    getLimits: () => apiClient.get('/api/account/limits'),
+  },
 };
