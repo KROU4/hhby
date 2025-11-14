@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '../store/authStore';
+import { ThemeToggle } from './ThemeToggle';
 
 export const Navbar = () => {
   const location = useLocation();
@@ -58,10 +59,11 @@ export const Navbar = () => {
 
           {/* Desktop User Menu */}
           <div className="hidden md:flex items-center gap-4">
-            <span className="text-sm text-gray-600">{user?.email}</span>
+            <ThemeToggle />
+            <span className="text-sm text-gray-600 dark:text-gray-300">{user?.email}</span>
             <button
               onClick={logout}
-              className="text-sm text-gray-600 hover:text-primary-500 transition-colors"
+              className="text-sm text-gray-600 dark:text-gray-300 hover:text-primary-500 transition-colors"
             >
               Выйти
             </button>

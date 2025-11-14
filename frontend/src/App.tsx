@@ -1,9 +1,12 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 
 import { Navbar } from './components/Navbar';
 import { ToastContainer } from './components/Toast';
+import { ShortcutsModal } from './components/ShortcutsModal';
+import { Onboarding } from './components/Onboarding';
 import { Landing } from './pages/Landing';
 import { AuthCallback } from './pages/AuthCallback';
 import { Dashboard } from './pages/Dashboard';
@@ -34,6 +37,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 function App() {
   const { isAuthenticated, fetchUser } = useAuthStore();
+  useKeyboardShortcuts();
 
   useEffect(() => {
     // Fetch user on app load if token exists
@@ -44,9 +48,11 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen">
+      <div className="min-h-screen dark:bg-gray-900 dark:text-white transition-colors">
         <Navbar />
         <ToastContainer />
+        <ShortcutsModal />
+        <Onboarding />
         <Routes>
           {/* Public routes */}
           <Route
