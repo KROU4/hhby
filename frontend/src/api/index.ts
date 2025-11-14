@@ -130,4 +130,55 @@ export const api = {
         totalCount: number;
       }>(`/api/employers/${encodeURIComponent(company)}`),
   },
+
+  // Search
+  search: {
+    getHistory: (limit = 10) =>
+      apiClient.get<Array<{
+        id: string;
+        text: string | null;
+        area: string | null;
+        salary: number | null;
+        experience: string | null;
+        schedule: string | null;
+        name: string | null;
+        resultCount: number | null;
+        useCount: number;
+        createdAt: string;
+        lastUsedAt: string;
+      }>>('/api/search/history', { params: { limit } }),
+    saveHistory: (data: {
+      text?: string;
+      area?: string;
+      salary?: number;
+      experience?: string;
+      schedule?: string;
+      name?: string;
+      resultCount?: number;
+    }) => apiClient.post('/api/search/history', data),
+    updateHistoryName: (id: string, name: string) =>
+      apiClient.put(`/api/search/history/${id}`, { name }),
+    deleteHistory: (id: string) => apiClient.delete(`/api/search/history/${id}`),
+    getDrafts: () =>
+      apiClient.get<Array<{
+        id: string;
+        vacancyId: string;
+        vacancyTitle: string;
+        vacancyCompany: string;
+        vacancyUrl: string;
+        resumeId: string | null;
+        message: string | null;
+        createdAt: string;
+        updatedAt: string;
+      }>>('/api/search/drafts'),
+    saveDraft: (data: {
+      vacancyId: string;
+      vacancyTitle: string;
+      vacancyCompany: string;
+      vacancyUrl: string;
+      resumeId?: string;
+      message?: string;
+    }) => apiClient.post('/api/search/drafts', data),
+    deleteDraft: (id: string) => apiClient.delete(`/api/search/drafts/${id}`),
+  },
 };

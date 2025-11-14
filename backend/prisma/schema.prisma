@@ -30,6 +30,8 @@ model User {
   analytics  Analytics[]
   vacancyViews VacancyView[]
   vacancyFavorites VacancyFavorite[]
+  searchHistory SearchHistory[]
+  applicationDrafts ApplicationDraft[]
 }
 
 // Резюме пользователя
@@ -172,4 +174,52 @@ model VacancyFavorite {
 
   @@unique([userId, jobId])
   @@index([userId, addedAt])
+}
+
+// История поиска
+model SearchHistory {
+  id        String   @id @default(uuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Параметры поиска (JSON)
+  text      String?
+  area      String?
+  salary    Int?
+  experience String?
+  schedule  String?
+
+  // Метаданные
+  name      String?  // Название сохраненного поиска (опционально)
+  resultCount Int?   // Количество найденных вакансий
+  useCount  Int     @default(1)  // Счетчик использований
+
+  createdAt DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+
+  @@index([userId, lastUsedAt])
+}
+
+// Черновики откликов
+model ApplicationDraft {
+  id        String   @id @default(uuid())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Данные вакансии
+  vacancyId String
+  vacancyTitle String
+  vacancyCompany String
+  vacancyUrl String
+
+  // Данные черновика
+  resumeId  String?
+  message   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, updatedAt])
 }
