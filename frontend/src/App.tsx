@@ -39,32 +39,27 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return isAuthenticated ? <>{children}</> : <Navigate to="/" />;
 };
 
-function App() {
-  const { isAuthenticated, fetchUser } = useAuthStore();
+// Inner component that uses router hooks
+const AppContent = () => {
+  const { isAuthenticated } = useAuthStore();
   const { isOpen, reason, lockedFeature, closeModal } = useUpgradeModalStore();
+
+  // This hook uses useNavigate, so it must be inside BrowserRouter
   useKeyboardShortcuts();
 
-  useEffect(() => {
-    // Fetch user on app load if token exists
-    if (localStorage.getItem('token')) {
-      fetchUser();
-    }
-  }, [fetchUser]);
-
   return (
-    <BrowserRouter>
-      <div className="min-h-screen dark:bg-gray-900 dark:text-white transition-colors">
-        <Navbar />
-        <ToastContainer />
-        <ShortcutsModal />
-        <Onboarding />
-        <UpgradeModal
-          isOpen={isOpen}
-          onClose={closeModal}
-          reason={reason}
-          lockedFeature={lockedFeature}
-        />
-        <Routes>
+    <div className="min-h-screen dark:bg-gray-900 dark:text-white transition-colors">
+      <Navbar />
+      <ToastContainer />
+      <ShortcutsModal />
+      <Onboarding />
+      <UpgradeModal
+        isOpen={isOpen}
+        onClose={closeModal}
+        reason={reason}
+        lockedFeature={lockedFeature}
+      />
+      <Routes>
           {/* Public routes */}
           <Route
             path="/"
@@ -151,6 +146,22 @@ function App() {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
+  );
+};
+
+function App() {
+  const { fetchUser } = useAuthStore();
+
+  useEffect(() => {
+    // Fetch user on app load if token exists
+    if (localStorage.getItem('token')) {
+      fetchUser();
+    }
+  }, [fetchUser]);
+
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   );
 }
