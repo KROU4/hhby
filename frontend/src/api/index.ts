@@ -54,6 +54,14 @@ export const api = {
         params: status ? { status } : {},
       }),
     getOne: (id: string) => apiClient.get<JobApplication>(`/api/applications/${id}`),
+    exportCSV: () => {
+      const token = localStorage.getItem('token');
+      window.open(`${apiClient.defaults.baseURL}/api/applications/export/csv?token=${token}`, '_blank');
+    },
+    exportJSON: () => {
+      const token = localStorage.getItem('token');
+      window.open(`${apiClient.defaults.baseURL}/api/applications/export/json?token=${token}`, '_blank');
+    },
   },
 
   // Settings
@@ -92,5 +100,34 @@ export const api = {
         },
       });
     },
+    exportCSV: (from?: string, to?: string) => {
+      const token = localStorage.getItem('token');
+      const params = new URLSearchParams({ token: token || '' });
+      if (from) params.append('from', from);
+      if (to) params.append('to', to);
+      window.open(`${apiClient.defaults.baseURL}/api/analytics/export/csv?${params.toString()}`, '_blank');
+    },
+  },
+
+  // Employers
+  employers: {
+    getStats: () =>
+      apiClient.get<Array<{
+        company: string;
+        totalApplications: number;
+        totalVacancies: number;
+        viewedCount: number;
+        invitedCount: number;
+        rejectedCount: number;
+        viewRate: number;
+        inviteRate: number;
+        avgResponseTimeDays: number | null;
+      }>>('/api/employers/stats'),
+    getDetails: (company: string) =>
+      apiClient.get<{
+        company: string;
+        applications: any[];
+        totalCount: number;
+      }>(`/api/employers/${encodeURIComponent(company)}`),
   },
 };

@@ -226,9 +226,18 @@ export const Dashboard = () => {
             transition={{ delay: 0.4 }}
           >
             <Card>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                Активность за неделю
-              </h3>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-semibold text-gray-900">
+                  Активность за неделю
+                </h3>
+                <button
+                  onClick={() => api.analytics.exportCSV()}
+                  className="px-3 py-1 text-sm bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  title="Экспорт аналитики в CSV"
+                >
+                  📊 CSV
+                </button>
+              </div>
               <Line
                 data={activityChartData}
                 options={{
@@ -346,6 +355,16 @@ export const Dashboard = () => {
             </h3>
             <p className="text-gray-600">
               Просмотрите все отправленные отклики и их статусы
+            </p>
+          </Card>
+
+          <Card className="cursor-pointer" onClick={() => window.location.href = '/employers'}>
+            <div className="text-4xl mb-4">🏢</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Статистика работодателей
+            </h3>
+            <p className="text-gray-600">
+              Анализ откликов по компаниям и response rate
             </p>
           </Card>
         </div>

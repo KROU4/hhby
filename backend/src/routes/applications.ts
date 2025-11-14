@@ -174,4 +174,75 @@ router.get('/:id', async (req: AuthRequest, res) => {
   }
 });
 
+// GET /api/applications/export/csv - Экспорт откликов в CSV
+router.get('/export/csv', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+
+    const applications = await prisma.jobApplication.findMany({
+      where: { userId },
+      include: {
+        job: true,
+        resume: true,
+      },
+      orderBy: {
+        sentAt: 'desc',
+      },
+    });
+
+    // Генерируем CSV
+    const csvHeader = 'Дата отклика,Вакансия,Компания,Зарплата,Город,Статус,Резюме,URL\n';
+    const csvRows = applications.map(app => {
+      const date = new Date(app.sentAt).toLocaleDateString('ru-RU');
+      const vacancy = `"${app.job.title.replace(/"/g, '""')}"`;
+      const company = `"${app.job.company.replace(/"/g, '""')}"`;
+      const salary = app.job.salary ? `"${app.job.salary.replace(/"/g, '""')}"` : '';
+      const location = app.job.location ? `"${app.job.location.replace(/"/g, '""')}"` : '';
+      const status = app.status;
+      const resume = `"${app.resume.title.replace(/"/g, '""')}"`;
+      const url = app.job.url;
+
+      return `${date},${vacancy},${company},${salary},${location},${status},${resume},${url}`;
+    }).join('\n');
+
+    const csv = csvHeader + csvRows;
+
+    // Устанавливаем заголовки для скачивания файла
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="applications_${new Date().toISOString().split('T')[0]}.csv"`);
+
+    // Добавляем BOM для корректного отображения кириллицы в Excel
+    res.write('\ufeff');
+    res.end(csv);
+  } catch (error: any) {
+    logger.error('Export CSV error:', error);
+    res.status(500).json({ error: 'Failed to export applications' });
+  }
+});
+
+// GET /api/applications/export/json - Экспорт откликов в JSON
+router.get('/export/json', async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+
+    const applications = await prisma.jobApplication.findMany({
+      where: { userId },
+      include: {
+        job: true,
+        resume: true,
+      },
+      orderBy: {
+        sentAt: 'desc',
+      },
+    });
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="applications_${new Date().toISOString().split('T')[0]}.json"`);
+    res.json(applications);
+  } catch (error: any) {
+    logger.error('Export JSON error:', error);
+    res.status(500).json({ error: 'Failed to export applications' });
+  }
+});
+
 export default router;

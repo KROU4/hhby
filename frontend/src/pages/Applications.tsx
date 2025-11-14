@@ -92,12 +92,32 @@ export const Applications = () => {
         animate={{ opacity: 1, y: 0 }}
         className="mb-12"
       >
-        <h1 className="text-4xl font-bold gradient-text mb-4">
-          История откликов
-        </h1>
-        <p className="text-gray-600">
-          Все ваши отклики на вакансии и их статусы
-        </p>
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h1 className="text-4xl font-bold gradient-text mb-4">
+              История откликов
+            </h1>
+            <p className="text-gray-600">
+              Все ваши отклики на вакансии и их статусы
+            </p>
+          </div>
+          {applications.length > 0 && (
+            <div className="flex gap-3">
+              <button
+                onClick={() => api.applications.exportCSV()}
+                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+              >
+                📊 Экспорт CSV
+              </button>
+              <button
+                onClick={() => api.applications.exportJSON()}
+                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+              >
+                📄 Экспорт JSON
+              </button>
+            </div>
+          )}
+        </div>
       </motion.div>
 
       {/* Filters */}

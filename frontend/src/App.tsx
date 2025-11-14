@@ -12,6 +12,7 @@ import { Settings } from './pages/Settings';
 import { Applications } from './pages/Applications';
 import { History } from './pages/History';
 import { Favorites } from './pages/Favorites';
+import { Employers } from './pages/Employers';
 
 // Protected route wrapper
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -101,6 +102,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Favorites />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/employers"
+            element={
+              <ProtectedRoute>
+                <Employers />
               </ProtectedRoute>
             }
           />
