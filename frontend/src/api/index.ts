@@ -182,7 +182,7 @@ export const api = {
     deleteDraft: (id: string) => apiClient.delete(`/api/search/drafts/${id}`),
   },
 
-  // Account  
+  // Account
   account: {
     getProfile: () => apiClient.get('/api/account/profile'),
     getSessions: () => apiClient.get('/api/account/sessions'),
@@ -192,5 +192,29 @@ export const api = {
       apiClient.get('/api/account/audit-log', { params }),
     getSubscription: () => apiClient.get('/api/account/subscription'),
     getLimits: () => apiClient.get('/api/account/limits'),
+  },
+
+  // AI
+  ai: {
+    generateCoverLetter: (data: {
+      vacancyId?: string;
+      vacancy: {
+        title: string;
+        company: string;
+        description?: string;
+        requirements?: string;
+        salary?: string;
+        experience?: string;
+        schedule?: string;
+      };
+      options?: {
+        style?: 'professional' | 'friendly' | 'creative' | 'concise';
+        length?: 'short' | 'medium' | 'long';
+        customPrompt?: string;
+        includeSkills?: boolean;
+      };
+    }) => apiClient.post('/api/ai/generate-cover-letter', data),
+    validateApiKey: (apiKey: string) => apiClient.post('/api/ai/validate-api-key', { apiKey }),
+    getUsageStats: () => apiClient.get('/api/ai/usage-stats'),
   },
 };

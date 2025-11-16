@@ -80,6 +80,7 @@ model Settings {
   // Сопроводительное письмо
   coverLetterTemplate String?
   useAiGeneration     Boolean @default(false)
+  openaiApiKey        String? // Encrypted OpenAI API key
 
   // Расписание
   scheduleEnabled     Boolean @default(false)

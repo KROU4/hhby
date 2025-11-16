@@ -19,6 +19,7 @@ import analyticsRoutes from './routes/analytics';
 import employersRoutes from './routes/employers';
 import searchRoutes from './routes/search';
 import accountRoutes from './routes/account';
+import aiRoutes from './routes/ai';
 
 // Импортируем job scheduler
 import './jobs/autoResponder';
@@ -145,6 +146,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/employers', employersRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/account', accountRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Корневой роут
 app.get('/', (req, res) => {

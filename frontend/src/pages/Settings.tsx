@@ -18,6 +18,8 @@ export const Settings = () => {
     enabled: false,
     maxResponsesPerDay: 200,
     coverLetterTemplate: '',
+    useAiGeneration: false,
+    openaiApiKey: '',
     searchText: '',
     searchArea: '',
     searchSalary: '',
@@ -45,9 +47,11 @@ export const Settings = () => {
         enabled: settingsRes.data.enabled,
         maxResponsesPerDay: settingsRes.data.maxResponsesPerDay,
         coverLetterTemplate: settingsRes.data.coverLetterTemplate || '',
+        useAiGeneration: settingsRes.data.useAiGeneration || false,
+        openaiApiKey: settingsRes.data.openaiApiKey || '',
         searchText: settingsRes.data.searchFilters?.text || '',
         searchArea: settingsRes.data.searchFilters?.area || '',
-        searchSalary: settingsRes.data.searchFilters?.salary?.toString() || '',
+        searchSalary: settingsRes.data.searchFilters?.toString() || '',
         excludeKeywords: settingsRes.data.excludeKeywords?.join(', ') || '',
         blacklistEmployers: settingsRes.data.blacklistEmployers?.join(', ') || '',
         scheduleEnabled: settingsRes.data.scheduleEnabled || false,
@@ -68,6 +72,8 @@ export const Settings = () => {
         enabled: formData.enabled,
         maxResponsesPerDay: formData.maxResponsesPerDay,
         coverLetterTemplate: formData.coverLetterTemplate,
+        useAiGeneration: formData.useAiGeneration,
+        openaiApiKey: formData.openaiApiKey || undefined,
         searchFilters: {
           text: formData.searchText || undefined,
           area: formData.searchArea || undefined,
@@ -304,6 +310,74 @@ export const Settings = () => {
           value={formData.coverLetterTemplate}
           onChange={(e) => setFormData({ ...formData, coverLetterTemplate: e.target.value })}
         />
+
+        {/* AI Generation Settings */}
+        <div className="mt-8 p-6 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🤖</span>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">
+                  AI Генерация писем
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Автоматическое создание сопроводительных писем с помощью OpenAI GPT
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, useAiGeneration: !formData.useAiGeneration })}
+              className={`
+                relative w-14 h-8 rounded-full transition-colors
+                ${formData.useAiGeneration ? 'bg-purple-500' : 'bg-gray-300'}
+              `}
+            >
+              <div
+                className={`
+                  absolute top-1 w-6 h-6 bg-white rounded-full transition-transform
+                  ${formData.useAiGeneration ? 'translate-x-7' : 'translate-x-1'}
+                `}
+              />
+            </button>
+          </div>
+
+          {formData.useAiGeneration && (
+            <div className="mt-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  OpenAI API Ключ
+                </label>
+                <input
+                  type="password"
+                  className="input w-full"
+                  placeholder="sk-..."
+                  value={formData.openaiApiKey}
+                  onChange={(e) => setFormData({ ...formData, openaiApiKey: e.target.value })}
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  Получите API ключ на{' '}
+                  <a
+                    href="https://platform.openai.com/api-keys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-purple-600 dark:text-purple-400 hover:underline"
+                  >
+                    platform.openai.com
+                  </a>
+                  . Ключ хранится в зашифрованном виде.
+                </p>
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                <p className="text-xs text-blue-900 dark:text-blue-200">
+                  <strong>💡 Совет:</strong> AI генерация доступна на тарифах Pro и Ultimate.
+                  Стоимость генерации ~$0.001-0.01 за письмо в зависимости от длины.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </Card>
 
       {/* Save button */}
