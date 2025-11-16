@@ -10,6 +10,7 @@ interface VacancyCardProps {
   applied?: boolean;
   isFavorite?: boolean;
   onToggleFavorite?: (vacancyId: string, isFavorite: boolean) => void;
+  onGenerateAiLetter?: (vacancy: Vacancy) => void;
 }
 
 export const VacancyCard = ({
@@ -18,7 +19,8 @@ export const VacancyCard = ({
   onApply,
   applied,
   isFavorite = false,
-  onToggleFavorite
+  onToggleFavorite,
+  onGenerateAiLetter
 }: VacancyCardProps) => {
   const [selectedResumeId, setSelectedResumeId] = useState<string>(resumes[0]?.id || '');
 
@@ -97,6 +99,15 @@ export const VacancyCard = ({
         >
           {applied ? '✓ Откликнулись' : 'Откликнуться'}
         </Button>
+        {onGenerateAiLetter && !applied && (
+          <Button
+            variant="secondary"
+            onClick={() => onGenerateAiLetter(vacancy)}
+            className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-0"
+          >
+            🤖 AI
+          </Button>
+        )}
         <Button
           variant="secondary"
           onClick={() => window.open(vacancy.alternate_url, '_blank')}

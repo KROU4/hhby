@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import { VacancyCard } from '../components/VacancyCard';
 import { Pagination } from '../components/Pagination';
+import { AiCoverLetterGenerator } from '../components/AiCoverLetterGenerator';
 import { api } from '../api';
 import { Vacancy, Resume } from '../types';
 import { useToastStore } from '../store/toastStore';
@@ -17,6 +18,8 @@ export const Search = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalVacancies, setTotalVacancies] = useState(0);
+  const [showAiModal, setShowAiModal] = useState(false);
+  const [selectedVacancy, setSelectedVacancy] = useState<Vacancy | null>(null);
   const { addToast } = useToastStore();
 
   const itemsPerPage = 10;
@@ -135,6 +138,18 @@ export const Search = () => {
     }
   };
 
+  const handleGenerateAiLetter = (vacancy: Vacancy) => {
+    setSelectedVacancy(vacancy);
+    setShowAiModal(true);
+  };
+
+  const handleAiLetterGenerated = (letter: string) => {
+    // Here we could auto-fill the cover letter in the application
+    // For now, just close the modal and show toast
+    setShowAiModal(false);
+    addToast('Письмо сгенерировано! Используйте его при отклике.', 'success');
+  };
+
   return (
     <div className="container mx-auto px-6 py-12">
       <motion.div
@@ -236,6 +251,7 @@ export const Search = () => {
                 applied={appliedVacancies.has(vacancy.id)}
                 isFavorite={favoriteVacancies.has(vacancy.id)}
                 onToggleFavorite={handleToggleFavorite}
+                onGenerateAiLetter={handleGenerateAiLetter}
               />
             ))}
           </div>
@@ -253,6 +269,46 @@ export const Search = () => {
           </p>
         </div>
       )}
+
+      {/* AI Cover Letter Generator Modal */}
+      <AnimatePresence>
+        {showAiModal && selectedVacancy && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowAiModal(false)}
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            />
+
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-8"
+            >
+              <AiCoverLetterGenerator
+                vacancy={{
+                  title: selectedVacancy.name,
+                  company: selectedVacancy.employer.name,
+                  description: selectedVacancy.snippet?.responsibility,
+                  requirements: selectedVacancy.snippet?.requirement,
+                  salary: selectedVacancy.salary
+                    ? `${selectedVacancy.salary.from || ''}-${selectedVacancy.salary.to || ''} ${selectedVacancy.salary.currency}`
+                    : undefined,
+                  experience: selectedVacancy.experience?.name,
+                  schedule: selectedVacancy.schedule?.name,
+                }}
+                onGenerated={handleAiLetterGenerated}
+                onClose={() => setShowAiModal(false)}
+              />
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
